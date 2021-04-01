@@ -4,8 +4,8 @@ RUN dnf update -yqq
 RUN dnf install curl -yqq
 
 # Openssl libs
-RUN curl -SL https://github.com/nohnaimer/docker/raw/main/utorrent/libcrypto.so.1.0.0 --output  /usr/lib64/libcrypto.so.1.0.0
-RUN curl -SL https://github.com/nohnaimer/docker/raw/main/utorrent/libssl.so.1.0.0 --output  /usr/lib64/libssl.so.1.0.0
+RUN curl -SL https://github.com/nohnaimer/utorrent-docker/raw/master/libcrypto.so.1.0.0 --output  /usr/lib64/libcrypto.so.1.0.0
+RUN curl -SL https://github.com/nohnaimer/utorrent-docker/raw/master/libssl.so.1.0.0 --output  /usr/lib64/libssl.so.1.0.0
 
 # Add user utorrent
 RUN useradd --home-dir /opt/utorrent --create-home --shell /bin/bash utorrent
@@ -20,7 +20,7 @@ RUN tar -xf /tmp/utserver.tar.gz -C /tmp
 RUN mv /tmp/utorrent-server-alpha-v3_3/docs /opt/utorrent
 RUN mv /tmp/utorrent-server-alpha-v3_3/utserver /opt/utorrent
 RUN mv /tmp/utorrent-server-alpha-v3_3/webui.zip /opt/utorrent/webui
-RUN curl -SL https://raw.githubusercontent.com/nohnaimer/docker/main/utorrent/utserver.conf --output /opt/utorrent/conf/utserver.conf
+RUN curl -SL https://github.com/nohnaimer/utorrent-docker/raw/master/utserver.conf --output /opt/utorrent/conf/utserver.conf
 
 # Fix permissions
 RUN chown -R utorrent:utorrent /data /opt/utorrent
