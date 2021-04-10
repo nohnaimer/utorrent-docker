@@ -1,7 +1,11 @@
 FROM centos:latest
 
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+
 RUN dnf update -yqq
-RUN dnf install curl -yqq
+RUN dnf install curl glibc-langpack-en -yqq
 
 # Openssl libs
 RUN curl -SL https://github.com/nohnaimer/utorrent-docker/raw/master/libcrypto.so.1.0.0 --output  /usr/lib64/libcrypto.so.1.0.0
