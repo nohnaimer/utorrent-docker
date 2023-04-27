@@ -1,15 +1,22 @@
-FROM centos:latest
+FROM alpine:3.17
 
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
+RUN apk upgrade --no-cache --available
 
-RUN dnf update -yqq
-RUN dnf install curl glibc-langpack-en -yqq
+RUN apk add --update --no-cache curl libgcc openssl
+RUN curl -o glibc-2.21-r2.apk "https://circle-artifacts.com/gh/andyshinn/alpine-pkg-glibc/6/artifacts/0/home/ubuntu/alpine-pkg-glibc/packages/x86_64/glibc-2.21-r2.apk"
+RUN apk add --no-cache --allow-untrusted glibc-2.21-r2.apk
+RUN curl -o glibc-bin-2.21-r2.apk "https://circle-artifacts.com/gh/andyshinn/alpine-pkg-glibc/6/artifacts/0/home/ubuntu/alpine-pkg-glibc/packages/x86_64/glibc-bin-2.21-r2.apk"
+RUN apk add --no-cache --allow-untrusted glibc-bin-2.21-r2.apk
+RUN /usr/glibc/usr/bin/ldconfig /lib /usr/glibc/usr/lib
+RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 
-# Openssl libs
-RUN curl -SL https://github.com/nohnaimer/utorrent-docker/raw/master/libcrypto.so.1.0.0 --output  /usr/lib64/libcrypto.so.1.0.0
-RUN curl -SL https://github.com/nohnaimer/utorrent-docker/raw/master/libssl.so.1.0.0 --output  /usr/lib64/libssl.so.1.0.0
+# Install necessary packages & Create sym link for libssl because the CentOS 6 has newer version than what uTorrent requires
+RUN ln -s /usr/lib/libssl.so.1.0.0 /usr/lib/libssl.so.0.9.8 && \
+    ln -s /usr/lib/libcrypto.so.1.0.0 /usr/lib/libcrypto.so.0.9.8
+
+# usermod & groupmod
+RUN apk add --no-cache shadow
+RUN adduser -S -D -h /opt/utorrent -s /bin/sh utorrent
 
 # Add user utorrent
 RUN useradd --home-dir /opt/utorrent --create-home --shell /bin/bash utorrent
@@ -35,8 +42,10 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=5 CMD curl -sSf http://127.0.
 
 WORKDIR /opt/utorrent
 
-CMD ["/opt/utorrent/utserver", "-settingspath", "/opt/utorrent/settings", "-configfile", "/opt/utorrent/conf/utserver.conf", "-logfile", "/dev/stdout"]
+# Setting up the entry point to allow for graceful exit when the container is stopped
+ENTRYPOINT ["/opt/utorrent/utserver", "-settingspath", "/opt/utorrent/settings", "-configfile"]
+CMD ["/opt/utorrent/conf/utserver.conf", "-logfile", "/dev/stdout", "&"]
 
 # Clean up
-RUN dnf clean all
-RUN rm -rf /tmp/ut*
+RUN apk del curl
+RUN rm -rf glibc-2.21-r2.apk glibc-bin-2.21-r2.apk /var/cache/apk/*
