@@ -1,7 +1,5 @@
 .git
 .cache
 Dockerfile
-libcrypto.so.1.0.0
-libssl.so.1.0.0
 LICENSE
 *.md
